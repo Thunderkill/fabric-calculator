@@ -117,7 +117,7 @@ const Skirt3DVisualization: React.FC<Skirt3DVisualizationProps> = ({
   return (
     <div style={{ width: '100%', height: '500px', background: '#f0f0f0' }}>
       <Canvas>
-        <PerspectiveCamera makeDefault position={[0, skirtLength / 2, waistRadius * 3]} fov={50} />
+        <PerspectiveCamera makeDefault position={[0, skirtLength * 0.75, waistRadius * 5]} fov={50} />
         <OrbitControls enablePan={false} enableZoom={true} enableRotate={true} />
         <ambientLight intensity={1.0} />
         <directionalLight position={[5, 10, 7.5]} intensity={1.5} />
