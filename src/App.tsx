@@ -1,4 +1,3 @@
-import React from 'react';
 import FabricCalculator from './components/FabricCalculator';
 
 function App() {
