@@ -26,10 +26,10 @@ const getPanelWidths = (totalCircumference: number, knobPositions: number[], cou
 
 const Slider: React.FC<{
   label: string;
-  totalCircumference: number | '';
+  totalCircumference: string;
   knobPositions: number[];
   setKnobPositions: React.Dispatch<React.SetStateAction<number[]>>;
-  panelCount: number;
+  panelCount: string;
 }> = ({ label, totalCircumference, knobPositions, setKnobPositions, panelCount }) => {
   const sliderTrackRef = useRef<HTMLDivElement>(null);
   const [activeKnobIndex, setActiveKnobIndex] = useState<number | null>(null);
@@ -47,7 +47,7 @@ const Slider: React.FC<{
       newPositions[activeKnobIndex] = Math.max(
         activeKnobIndex === 0 ? 0 : newPositions[activeKnobIndex - 1],
         Math.min(
-          activeKnobIndex === panelCount - 2 ? 1 : (newPositions[activeKnobIndex + 1] || 1),
+          activeKnobIndex === Number(panelCount) - 2 ? 1 : (newPositions[activeKnobIndex + 1] || 1),
           newRelativePos
         )
       );
@@ -74,9 +74,10 @@ const Slider: React.FC<{
     };
   }, [activeKnobIndex, handleMouseMove, handleMouseUp]);
 
-  if (totalCircumference === '' || totalCircumference <= 0 || panelCount <= 1) return null;
+  if (totalCircumference === '' || Number(totalCircumference) <= 0 || Number(panelCount) <= 1) return null;
 
   const numTotalCircumference = Number(totalCircumference);
+  const numPanelCount = Number(panelCount);
 
   return (
     <div className="slider-group">
@@ -108,7 +109,7 @@ const Slider: React.FC<{
         ))}
       </div>
       <div className="panel-width-display">
-        {getPanelWidths(numTotalCircumference, knobPositions, panelCount).map((width: number, index: number) => (
+        {getPanelWidths(numTotalCircumference, knobPositions, numPanelCount).map((width: number, index: number) => (
           <span key={index} style={{ marginRight: '10px' }}>
             Panel {index + 1}: {width.toFixed(2)}cm
           </span>
@@ -183,13 +184,13 @@ const renderPanelVisualization = (calculatedPanels: PanelDimensions[]) => {
 };
 
 const AlineSkirtCalculator: React.FC = () => {
-  const [waistCircumference, setWaistCircumference] = useState<number | ''>('');
-  const [hemCircumference, setHemCircumference] = useState<number | ''>('');
-  const [panelCount, setPanelCount] = useState<number>(4); // Default to 4 panels
-  const [skirtLength, setSkirtLength] = useState<number | ''>('');
-  const [waistSeamAllowance, setWaistSeamAllowance] = useState<number>(0);
-  const [sideSeamAllowance, setSideSeamAllowance] = useState<number>(0);
-  const [hemSeamAllowance, setHemSeamAllowance] = useState<number>(0);
+  const [waistCircumference, setWaistCircumference] = useState<string>('');
+  const [hemCircumference, setHemCircumference] = useState<string>('');
+  const [panelCount, setPanelCount] = useState<string>('4'); // Default to 4 panels
+  const [skirtLength, setSkirtLength] = useState<string>('');
+  const [waistSeamAllowance, setWaistSeamAllowance] = useState<string>('0');
+  const [sideSeamAllowance, setSideSeamAllowance] = useState<string>('0');
+  const [hemSeamAllowance, setHemSeamAllowance] = useState<string>('0');
 
   // State for slider knob positions (normalized 0-1, relative to total circumference)
   // For N panels, there are N-1 knobs.
@@ -201,8 +202,9 @@ const AlineSkirtCalculator: React.FC = () => {
 
   // Initialize knob positions when panelCount changes
   useEffect(() => {
-    if (panelCount > 1) {
-      const initialKnobs = Array.from({ length: panelCount - 1 }, (_, i) => (i + 1) / panelCount);
+    const numPanelCount = Number(panelCount);
+    if (numPanelCount > 1) {
+      const initialKnobs = Array.from({ length: numPanelCount - 1 }, (_, i) => (i + 1) / numPanelCount);
       setWaistKnobPositions(initialKnobs);
       setHemKnobPositions(initialKnobs);
     } else {
@@ -215,8 +217,8 @@ const AlineSkirtCalculator: React.FC = () => {
     setError(null);
     if (
       waistCircumference === '' || hemCircumference === '' || skirtLength === '' ||
-      waistCircumference <= 0 || hemCircumference <= 0 || skirtLength <= 0 ||
-      panelCount <= 0
+      Number(waistCircumference) <= 0 || Number(hemCircumference) <= 0 || Number(skirtLength) <= 0 ||
+      Number(panelCount) <= 0
     ) {
       setError('Please enter valid positive numbers for all main inputs.');
       setCalculatedPanels(null);
@@ -226,20 +228,21 @@ const AlineSkirtCalculator: React.FC = () => {
     const numWaist = Number(waistCircumference);
     const numHem = Number(hemCircumference);
     const numSkirtLength = Number(skirtLength);
+    const numPanelCount = Number(panelCount);
 
     const panels: PanelDimensions[] = [];
 
-    const waistPanelWidths = getPanelWidths(numWaist, waistKnobPositions, panelCount);
-    const hemPanelWidths = getPanelWidths(numHem, hemKnobPositions, panelCount);
+    const waistPanelWidths = getPanelWidths(numWaist, waistKnobPositions, numPanelCount);
+    const hemPanelWidths = getPanelWidths(numHem, hemKnobPositions, numPanelCount);
 
-    for (let i = 0; i < panelCount; i++) {
+    for (let i = 0; i < numPanelCount; i++) {
       const panelWaistWidth = waistPanelWidths[i];
       const panelHemWidth = hemPanelWidths[i];
 
       // Add seam allowances
-      const panelWaistWidthWithSeam = panelWaistWidth + (sideSeamAllowance * 2);
-      const panelHemWidthWithSeam = panelHemWidth + (sideSeamAllowance * 2);
-      const panelHeightWithSeam = numSkirtLength + waistSeamAllowance + hemSeamAllowance;
+      const panelWaistWidthWithSeam = panelWaistWidth + (Number(sideSeamAllowance) * 2);
+      const panelHemWidthWithSeam = panelHemWidth + (Number(sideSeamAllowance) * 2);
+      const panelHeightWithSeam = numSkirtLength + Number(waistSeamAllowance) + Number(hemSeamAllowance);
 
       panels.push({
         id: i + 1,
@@ -266,7 +269,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="waistCircumference"
           value={waistCircumference}
-          onChange={(e) => setWaistCircumference(Number(e.target.value))}
+          onChange={(e) => setWaistCircumference(e.target.value)}
           className="input-field"
         />
       </div>
@@ -279,7 +282,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="hemCircumference"
           value={hemCircumference}
-          onChange={(e) => setHemCircumference(Number(e.target.value))}
+          onChange={(e) => setHemCircumference(e.target.value)}
           className="input-field"
         />
       </div>
@@ -292,7 +295,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="skirtLength"
           value={skirtLength}
-          onChange={(e) => setSkirtLength(Number(e.target.value))}
+          onChange={(e) => setSkirtLength(e.target.value)}
           className="input-field"
         />
       </div>
@@ -305,7 +308,10 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="panelCount"
           value={panelCount}
-          onChange={(e) => setPanelCount(Math.max(1, Math.floor(Number(e.target.value))))}
+          onChange={(e) => {
+            const value = e.target.value;
+            setPanelCount(value === '' ? '' : String(Math.max(1, Math.floor(Number(value)))));
+          }}
           className="input-field"
           min="1"
         />
@@ -334,7 +340,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="waistSeamAllowance"
           value={waistSeamAllowance}
-          onChange={(e) => setWaistSeamAllowance(Number(e.target.value))}
+          onChange={(e) => setWaistSeamAllowance(e.target.value)}
           className="input-field"
         />
       </div>
@@ -347,7 +353,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="sideSeamAllowance"
           value={sideSeamAllowance}
-          onChange={(e) => setSideSeamAllowance(Number(e.target.value))}
+          onChange={(e) => setSideSeamAllowance(e.target.value)}
           className="input-field"
         />
       </div>
@@ -360,7 +366,7 @@ const AlineSkirtCalculator: React.FC = () => {
           type="number"
           id="hemSeamAllowance"
           value={hemSeamAllowance}
-          onChange={(e) => setHemSeamAllowance(Number(e.target.value))}
+          onChange={(e) => setHemSeamAllowance(e.target.value)}
           className="input-field"
         />
       </div>
