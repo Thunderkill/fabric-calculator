@@ -33,11 +33,46 @@ const FabricCalculator: React.FC = () => {
     setResult(explanation);
   };
 
+  const renderFabricVisualization = () => {
+    if (!result || fabricLength === '' || wantedLength === '') return null;
+
+    const numFabricLength = Number(fabricLength);
+    const numWantedLength = Number(wantedLength);
+
+    if (numFabricLength <= 0 || numWantedLength <= 0) return null;
+
+    const fullCuts = Math.floor(numWantedLength / numFabricLength);
+    const remaining = numWantedLength % numFabricLength;
+
+    const pieces = [];
+    for (let i = 0; i < fullCuts; i++) {
+      pieces.push(
+        <div key={`full-${i}`} className="fabric-piece" style={{ width: `${Math.min(numFabricLength, 100)}px` }}>
+          {numFabricLength}cm
+        </div>
+      );
+    }
+
+    if (remaining > 0) {
+      pieces.push(
+        <div key="remaining" className="fabric-piece remaining" style={{ width: `${Math.min(remaining, 100)}px` }}>
+          {remaining.toFixed(2)}cm
+        </div>
+      );
+    }
+
+    return (
+      <div className="fabric-visualization">
+        {pieces}
+      </div>
+    );
+  };
+
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', padding: '20px', maxWidth: '600px', margin: 'auto', border: '1px solid #ccc', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-      <h2 style={{ textAlign: 'center', color: '#333' }}>Fabric Cut Calculator</h2>
-      <div style={{ marginBottom: '15px' }}>
-        <label htmlFor="fabricLength" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+    <div className="calculator-container">
+      <h2 className="calculator-title">Fabric Cut Calculator</h2>
+      <div className="input-group">
+        <label htmlFor="fabricLength" className="input-label">
           Available Fabric Length (cm):
         </label>
         <input
@@ -45,11 +80,11 @@ const FabricCalculator: React.FC = () => {
           id="fabricLength"
           value={fabricLength}
           onChange={(e) => setFabricLength(Number(e.target.value))}
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ddd' }}
+          className="input-field"
         />
       </div>
-      <div style={{ marginBottom: '15px' }}>
-        <label htmlFor="wantedLength" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+      <div className="input-group">
+        <label htmlFor="wantedLength" className="input-label">
           Wanted Fabric Length (cm):
         </label>
         <input
@@ -57,28 +92,17 @@ const FabricCalculator: React.FC = () => {
           id="wantedLength"
           value={wantedLength}
           onChange={(e) => setWantedLength(Number(e.target.value))}
-          style={{ width: '100%', padding: '8px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ddd' }}
+          className="input-field"
         />
       </div>
-      <button
-        onClick={calculateCuts}
-        style={{
-          width: '100%',
-          padding: '10px 15px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '16px'
-        }}
-      >
+      <button onClick={calculateCuts} className="calculate-button">
         Calculate Cuts
       </button>
       {result && (
-        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f0f8ff', border: '1px solid #b0e0e6', borderRadius: '4px' }}>
-          <h3 style={{ color: '#0056b3', marginBottom: '10px' }}>Result:</h3>
-          <p style={{ margin: '0', lineHeight: '1.5' }}>{result}</p>
+        <div className="result-container">
+          <h3 className="result-title">Result:</h3>
+          <p className="result-text">{result}</p>
+          {renderFabricVisualization()}
         </div>
       )}
     </div>

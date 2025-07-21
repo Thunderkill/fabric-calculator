@@ -1,0 +1,163 @@
+/* Basic Reset & Mobile-First Defaults */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f4f7f6;
+  color: #333;
+  line-height: 1.6;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align to top for better content flow */
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.App {
+  width: 100%;
+  max-width: 400px; /* Constrain width for mobile */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  box-sizing: border-box;
+  margin-top: 20px; /* Add some top margin */
+}
+
+.calculator-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.calculator-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+.input-group {
+  margin-bottom: 10px;
+}
+
+.input-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+  font-size: 0.95em;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1em;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.calculate-button {
+  width: 100%;
+  padding: 14px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  margin-top: 10px;
+}
+
+.calculate-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.calculate-button:active {
+  transform: translateY(0);
+}
+
+.result-container {
+  margin-top: 25px;
+  padding: 20px;
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.result-title {
+  color: #0056b3;
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.4em;
+}
+
+.result-text {
+  margin: 0;
+  line-height: 1.8;
+  color: #333;
+  font-size: 1em;
+}
+
+/* Fabric Visualization */
+.fabric-visualization {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 20px;
+  justify-content: center; /* Center pieces for better mobile view */
+}
+
+.fabric-piece {
+  background-color: #a8dadc;
+  border: 1px solid #457b9d;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  color: #1d3557;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 50px; /* Minimum width for small pieces */
+  height: 30px; /* Fixed height for visual consistency */
+  box-sizing: border-box;
+  padding: 5px;
+  text-align: center;
+}
+
+.fabric-piece.remaining {
+  background-color: #f1faee;
+  border-color: #e63946;
+  color: #e63946;
+}
+
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 768px) {
+  .App {
+    max-width: 600px; /* Wider for tablets/desktops */
+    padding: 40px;
+  }
+
+  .fabric-visualization {
+    justify-content: flex-start; /* Align left on larger screens */
+  }
+}
