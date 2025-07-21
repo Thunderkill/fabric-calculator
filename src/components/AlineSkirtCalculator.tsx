@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Skirt3DVisualization from './Skirt3DVisualization'; // Moved import to top
+import Skirt3DVisualization from './Skirt3DVisualization';
+import Skirt2DVisualization from './Skirt2DVisualization';
 
 interface PanelDimensions {
   id: number;
@@ -191,6 +192,8 @@ const AlineSkirtCalculator: React.FC = () => {
   const [waistSeamAllowance, setWaistSeamAllowance] = useState<string>('0');
   const [sideSeamAllowance, setSideSeamAllowance] = useState<string>('0');
   const [hemSeamAllowance, setHemSeamAllowance] = useState<string>('0');
+  const [cutAllowance, setCutAllowance] = useState<string>('0');
+  const [fabricWidth, setFabricWidth] = useState<string>('145'); // Default to 145cm
 
   // State for slider knob positions (normalized 0-1, relative to total circumference)
   // For N panels, there are N-1 knobs.
@@ -371,6 +374,35 @@ const AlineSkirtCalculator: React.FC = () => {
         />
       </div>
 
+      <div className="fabric-settings-section">
+        <h3>Fabric Settings</h3>
+        <div className="input-group">
+          <label htmlFor="fabricWidth" className="input-label">
+            Fabric Width (cm):
+          </label>
+          <input
+            type="number"
+            id="fabricWidth"
+            value={fabricWidth}
+            onChange={(e) => setFabricWidth(e.target.value)}
+            className="input-field"
+            min="1"
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="cutAllowance" className="input-label">
+            Cut Allowance (cm):
+          </label>
+          <input
+            type="number"
+            id="cutAllowance"
+            value={cutAllowance}
+            onChange={(e) => setCutAllowance(e.target.value)}
+            className="input-field"
+          />
+        </div>
+      </div>
+
       <button onClick={calculatePanels} className="calculate-button">
         Calculate Panels
       </button>
@@ -387,6 +419,12 @@ const AlineSkirtCalculator: React.FC = () => {
           />
           <h3>2D Panel Details:</h3>
           {renderPanelVisualization(calculatedPanels)}
+          <h3>2D Fabric Layout:</h3>
+          <Skirt2DVisualization
+            panels={calculatedPanels}
+            cutAllowance={Number(cutAllowance)}
+            fabricWidth={Number(fabricWidth)}
+          />
         </div>
       )}
     </div>
