@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface PanelDimensions {
   id: number;
@@ -9,6 +9,114 @@ interface PanelDimensions {
   hemWidthWithSeam: number;
   heightWithSeam: number;
 }
+
+// Calculate individual panel widths based on knob positions
+const getPanelWidths = (totalCircumference: number, knobPositions: number[], count: number) => {
+  const widths: number[] = [];
+  let prevPos = 0;
+  for (let i = 0; i < count - 1; i++) {
+    const currentPos = knobPositions[i];
+    widths.push((currentPos - prevPos) * totalCircumference);
+    prevPos = currentPos;
+  }
+  widths.push((1 - prevPos) * totalCircumference); // Last panel
+  return widths;
+};
+
+const Slider: React.FC<{
+  label: string;
+  totalCircumference: number | '';
+  knobPositions: number[];
+  setKnobPositions: React.Dispatch<React.SetStateAction<number[]>>;
+  panelCount: number;
+}> = ({ label, totalCircumference, knobPositions, setKnobPositions, panelCount }) => {
+  const sliderTrackRef = useRef<HTMLDivElement>(null);
+  const [activeKnobIndex, setActiveKnobIndex] = useState<number | null>(null);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (activeKnobIndex === null || !sliderTrackRef.current) return;
+
+    e.preventDefault(); // Prevent default browser behavior like text selection
+
+    const rect = sliderTrackRef.current.getBoundingClientRect();
+    const newRelativePos = (e.clientX - rect.left) / rect.width;
+
+    setKnobPositions(prevPositions => {
+      const newPositions = [...prevPositions];
+      newPositions[activeKnobIndex] = Math.max(
+        activeKnobIndex === 0 ? 0 : newPositions[activeKnobIndex - 1],
+        Math.min(
+          activeKnobIndex === panelCount - 2 ? 1 : (newPositions[activeKnobIndex + 1] || 1),
+          newRelativePos
+        )
+      );
+      return newPositions.sort((a, b) => a - b);
+    });
+  }, [activeKnobIndex, panelCount, setKnobPositions]);
+
+  const handleMouseUp = useCallback(() => {
+    setActiveKnobIndex(null);
+  }, []);
+
+  useEffect(() => {
+    if (activeKnobIndex !== null) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [activeKnobIndex, handleMouseMove, handleMouseUp]);
+
+  if (totalCircumference === '' || totalCircumference <= 0 || panelCount <= 1) return null;
+
+  const numTotalCircumference = Number(totalCircumference);
+
+  return (
+    <div className="slider-group">
+      <label className="input-label">{label} Panel Widths:</label>
+      <div
+        className="slider-track"
+        ref={sliderTrackRef}
+        style={{ width: '100%', height: '20px', background: '#ddd', position: 'relative' }}
+      >
+        {knobPositions.map((pos: number, index: number) => (
+          <div
+            key={index}
+            className="slider-knob"
+            style={{
+              left: `${pos * 100}%`,
+              position: 'absolute',
+              top: '50%',
+              width: '20px',
+              height: '20px',
+              background: 'blue',
+              cursor: 'ew-resize',
+              transform: 'translate(-50%, -50%)',
+            }}
+            onMouseDown={(e) => {
+              e.preventDefault(); // Prevent default drag behavior
+              setActiveKnobIndex(index);
+            }}
+          ></div>
+        ))}
+      </div>
+      <div className="panel-width-display">
+        {getPanelWidths(numTotalCircumference, knobPositions, panelCount).map((width: number, index: number) => (
+          <span key={index} style={{ marginRight: '10px' }}>
+            Panel {index + 1}: {width.toFixed(2)}cm
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 const AlineSkirtCalculator: React.FC = () => {
   const [waistCircumference, setWaistCircumference] = useState<number | ''>('');
@@ -38,19 +146,6 @@ const AlineSkirtCalculator: React.FC = () => {
       setHemKnobPositions([]);
     }
   }, [panelCount]);
-
-  // Calculate individual panel widths based on knob positions
-  const getPanelWidths = (totalCircumference: number, knobPositions: number[], count: number) => {
-    const widths: number[] = [];
-    let prevPos = 0;
-    for (let i = 0; i < count - 1; i++) {
-      const currentPos = knobPositions[i];
-      widths.push((currentPos - prevPos) * totalCircumference);
-      prevPos = currentPos;
-    }
-    widths.push((1 - prevPos) * totalCircumference); // Last panel
-    return widths;
-  };
 
   const calculatePanels = () => {
     setError(null);
@@ -93,70 +188,6 @@ const AlineSkirtCalculator: React.FC = () => {
       });
     }
     setCalculatedPanels(panels);
-  };
-
-  // Placeholder for slider component - will be implemented later
-  const renderSlider = (
-    label: string,
-    totalCircumference: number | '',
-    knobPositions: number[],
-    setKnobPositions: React.Dispatch<React.SetStateAction<number[]>>
-  ) => {
-    if (totalCircumference === '' || totalCircumference <= 0 || panelCount <= 1) return null;
-
-    const numTotalCircumference = Number(totalCircumference);
-
-    const handleKnobDrag = (index: number, newRelativePos: number) => {
-      const newPositions = [...knobPositions];
-      // Ensure knobs don't overlap and stay within bounds (0 to 1)
-      newPositions[index] = Math.max(
-        index === 0 ? 0 : newPositions[index - 1],
-        Math.min(
-          index === panelCount - 2 ? 1 : (newPositions[index + 1] || 1),
-          newRelativePos
-        )
-      );
-      setKnobPositions(newPositions.sort((a, b) => a - b)); // Keep sorted
-    };
-
-    return (
-      <div className="slider-group">
-        <label className="input-label">{label} Panel Widths:</label>
-        <div className="slider-track" style={{ width: '100%', height: '20px', background: '#ddd', position: 'relative' }}>
-          {knobPositions.map((pos: number, index: number) => (
-            <div
-              key={index}
-              className="slider-knob"
-              style={{
-                left: `${pos * 100}%`,
-                position: 'absolute',
-                top: '0',
-                width: '10px',
-                height: '20px',
-                background: 'blue',
-                cursor: 'ew-resize',
-                transform: 'translateX(-50%)',
-              }}
-              draggable="true"
-              onDrag={(e) => {
-                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                if (rect) {
-                  const newRelativePos = (e.clientX - rect.left) / rect.width;
-                  handleKnobDrag(index, newRelativePos);
-                }
-              }}
-            ></div>
-          ))}
-        </div>
-        <div className="panel-width-display">
-          {getPanelWidths(numTotalCircumference, knobPositions, panelCount).map((width: number, index: number) => (
-            <span key={index} style={{ marginRight: '10px' }}>
-              Panel {index + 1}: {width.toFixed(2)}cm
-            </span>
-          ))}
-        </div>
-      </div>
-    );
   };
 
   const renderPanelVisualization = () => {
@@ -268,8 +299,20 @@ const AlineSkirtCalculator: React.FC = () => {
         />
       </div>
 
-      {renderSlider('Waist', waistCircumference, waistKnobPositions, setWaistKnobPositions)}
-      {renderSlider('Hem', hemCircumference, hemKnobPositions, setHemKnobPositions)}
+      <Slider
+        label="Waist"
+        totalCircumference={waistCircumference}
+        knobPositions={waistKnobPositions}
+        setKnobPositions={setWaistKnobPositions}
+        panelCount={panelCount}
+      />
+      <Slider
+        label="Hem"
+        totalCircumference={hemCircumference}
+        knobPositions={hemKnobPositions}
+        setKnobPositions={setHemKnobPositions}
+        panelCount={panelCount}
+      />
 
       <div className="input-group">
         <label htmlFor="waistSeamAllowance" className="input-label">
