@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 const FabricCalculator: React.FC = () => {
   const [fabricLength, setFabricLength] = useState<number | ''>('');
   const [wantedLength, setWantedLength] = useState<number | ''>('');
+  const [seamAllowance, setSeamAllowance] = useState<number>(0); // New state for seam allowance
   const [result, setResult] = useState<string | null>(null);
 
   const calculateCuts = () => {
@@ -13,10 +14,11 @@ const FabricCalculator: React.FC = () => {
 
     const numFabricLength = Number(fabricLength);
     const numWantedLength = Number(wantedLength);
+    const totalWantedLength = numWantedLength + (seamAllowance * 2); // Add seam allowance to both sides
 
-    const cuts = numWantedLength / numFabricLength;
+    const cuts = totalWantedLength / numFabricLength;
     const fullCuts = Math.floor(cuts);
-    const remainingLength = numWantedLength % numFabricLength;
+    const remainingLength = totalWantedLength % numFabricLength;
 
     let explanation = `You need to cut the main fabric ${cuts.toFixed(2)} times.`;
 
@@ -38,11 +40,12 @@ const FabricCalculator: React.FC = () => {
 
     const numFabricLength = Number(fabricLength);
     const numWantedLength = Number(wantedLength);
+    const totalWantedLength = numWantedLength + (seamAllowance * 2); // Use total wanted length for visualization
 
-    if (numFabricLength <= 0 || numWantedLength <= 0) return null;
+    if (numFabricLength <= 0 || totalWantedLength <= 0) return null;
 
-    const fullCuts = Math.floor(numWantedLength / numFabricLength);
-    const remaining = numWantedLength % numFabricLength;
+    const fullCuts = Math.floor(totalWantedLength / numFabricLength);
+    const remaining = totalWantedLength % numFabricLength;
 
     const pieces = [];
     for (let i = 0; i < fullCuts; i++) {
@@ -92,6 +95,18 @@ const FabricCalculator: React.FC = () => {
           id="wantedLength"
           value={wantedLength}
           onChange={(e) => setWantedLength(Number(e.target.value))}
+          className="input-field"
+        />
+      </div>
+      <div className="input-group">
+        <label htmlFor="seamAllowance" className="input-label">
+          Seam Allowance (cm per side):
+        </label>
+        <input
+          type="number"
+          id="seamAllowance"
+          value={seamAllowance}
+          onChange={(e) => setSeamAllowance(Number(e.target.value))}
           className="input-field"
         />
       </div>
