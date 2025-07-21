@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Skirt3DVisualization from './Skirt3DVisualization'; // Moved import to top
 
 interface PanelDimensions {
   id: number;
@@ -118,6 +119,57 @@ const Slider: React.FC<{
 };
 
 
+const renderPanelVisualization = (calculatedPanels: PanelDimensions[]) => {
+  if (!calculatedPanels || calculatedPanels.length === 0) return null;
+
+  const maxPanelWidth = Math.max(...calculatedPanels.map(p => Math.max(p.waistWidthWithSeam, p.hemWidthWithSeam)));
+  const scaleFactor = 100 / maxPanelWidth; // Scale to fit within 100px width for visualization
+
+  return (
+    <div className="panel-visualization-container">
+      <div className="panels-grid">
+        {calculatedPanels.map(panel => (
+          <div key={panel.id} className="panel-card">
+            <h4>Panel {panel.id}</h4>
+            <svg
+              width="150"
+              height={panel.heightWithSeam * scaleFactor}
+              viewBox={`0 0 150 ${panel.heightWithSeam * scaleFactor}`}
+              className="panel-svg"
+            >
+              {/* Draw trapezoid */}
+              <polygon
+                points={`
+                  ${(150 - (panel.waistWidthWithSeam * scaleFactor)) / 2},0
+                  ${(150 + (panel.waistWidthWithSeam * scaleFactor)) / 2},0
+                  ${(150 + (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
+                  ${(150 - (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
+                `}
+                fill="#ADD8E6"
+                stroke="#333"
+                strokeWidth="1"
+              />
+              {/* Dimensions */}
+              <text x="75" y="15" textAnchor="middle" fontSize="10" fill="#333">
+                W: {panel.waistWidthWithSeam.toFixed(2)}cm
+              </text>
+              <text x="75" y={panel.heightWithSeam * scaleFactor - 5} textAnchor="middle" fontSize="10" fill="#333">
+                H: {panel.hemWidthWithSeam.toFixed(2)}cm
+              </text>
+              <text x="10" y={panel.heightWithSeam * scaleFactor / 2} textAnchor="start" fontSize="10" fill="#333" transform={`rotate(-90 10 ${panel.heightWithSeam * scaleFactor / 2})`}>
+                L: {panel.heightWithSeam.toFixed(2)}cm
+              </text>
+            </svg>
+            <p>Waist Width: {panel.waistWidth.toFixed(2)}cm ({panel.waistWidthWithSeam.toFixed(2)}cm with seam)</p>
+            <p>Hem Width: {panel.hemWidth.toFixed(2)}cm ({panel.hemWidthWithSeam.toFixed(2)}cm with seam)</p>
+            <p>Length: {panel.height.toFixed(2)}cm ({panel.heightWithSeam.toFixed(2)}cm with seam)</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const AlineSkirtCalculator: React.FC = () => {
   const [waistCircumference, setWaistCircumference] = useState<number | ''>('');
   const [hemCircumference, setHemCircumference] = useState<number | ''>('');
@@ -188,58 +240,6 @@ const AlineSkirtCalculator: React.FC = () => {
       });
     }
     setCalculatedPanels(panels);
-  };
-
-  const renderPanelVisualization = () => {
-    if (!calculatedPanels || calculatedPanels.length === 0) return null;
-
-    const maxPanelWidth = Math.max(...calculatedPanels.map(p => Math.max(p.waistWidthWithSeam, p.hemWidthWithSeam)));
-    const scaleFactor = 100 / maxPanelWidth; // Scale to fit within 100px width for visualization
-
-    return (
-      <div className="panel-visualization-container">
-        <h3>Calculated Panels:</h3>
-        <div className="panels-grid">
-          {calculatedPanels.map(panel => (
-            <div key={panel.id} className="panel-card">
-              <h4>Panel {panel.id}</h4>
-              <svg
-                width="150"
-                height={panel.heightWithSeam * scaleFactor}
-                viewBox={`0 0 150 ${panel.heightWithSeam * scaleFactor}`}
-                className="panel-svg"
-              >
-                {/* Draw trapezoid */}
-                <polygon
-                  points={`
-                    ${(150 - (panel.waistWidthWithSeam * scaleFactor)) / 2},0
-                    ${(150 + (panel.waistWidthWithSeam * scaleFactor)) / 2},0
-                    ${(150 + (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
-                    ${(150 - (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
-                  `}
-                  fill="#ADD8E6"
-                  stroke="#333"
-                  strokeWidth="1"
-                />
-                {/* Dimensions */}
-                <text x="75" y="15" textAnchor="middle" fontSize="10" fill="#333">
-                  W: {panel.waistWidthWithSeam.toFixed(2)}cm
-                </text>
-                <text x="75" y={panel.heightWithSeam * scaleFactor - 5} textAnchor="middle" fontSize="10" fill="#333">
-                  H: {panel.hemWidthWithSeam.toFixed(2)}cm
-                </text>
-                <text x="10" y={panel.heightWithSeam * scaleFactor / 2} textAnchor="start" fontSize="10" fill="#333" transform={`rotate(-90 10 ${panel.heightWithSeam * scaleFactor / 2})`}>
-                  L: {panel.heightWithSeam.toFixed(2)}cm
-                </text>
-              </svg>
-              <p>Waist Width: {panel.waistWidth.toFixed(2)}cm ({panel.waistWidthWithSeam.toFixed(2)}cm with seam)</p>
-              <p>Hem Width: {panel.hemWidth.toFixed(2)}cm ({panel.hemWidthWithSeam.toFixed(2)}cm with seam)</p>
-              <p>Length: {panel.height.toFixed(2)}cm ({panel.heightWithSeam.toFixed(2)}cm with seam)</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -359,7 +359,18 @@ const AlineSkirtCalculator: React.FC = () => {
 
       {error && <p className="error-message">{error}</p>}
 
-      {calculatedPanels && renderPanelVisualization()}
+      {calculatedPanels && (
+        <div className="visualization-section">
+          <h3>3D Skirt Visualization:</h3>
+          <Skirt3DVisualization
+            panels={calculatedPanels}
+            skirtLength={Number(skirtLength)}
+            waistCircumference={Number(waistCircumference)}
+          />
+          <h3>2D Panel Details:</h3>
+          {renderPanelVisualization(calculatedPanels)}
+        </div>
+      )}
     </div>
   );
 };
