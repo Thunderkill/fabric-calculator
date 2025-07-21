@@ -81,11 +81,8 @@ const Skirt2DVisualization: React.FC<Skirt2DVisualizationProps> = ({ panels, cut
 
   totalFabricHeight += currentRowHeight; // Add the height of the last row
 
-  // Adjust totalFabricWidth and totalFabricHeight to remove the last cutAllowance if it's at the very end
-  // Adjust totalFabricHeight to remove the last cutAllowance if it's at the very end
-  if (totalFabricHeight > 0 && rows[0].length > 0) { // Only adjust if there are panels
-    totalFabricHeight -= cutAllowance;
-  }
+  // No adjustment needed for totalFabricHeight at the end if cutAllowance is added between rows.
+  // The last row's height is already included in totalFabricHeight.
 
   // Scale for visualization
   const visualizationWidth = 600;
@@ -117,7 +114,6 @@ const Skirt2DVisualization: React.FC<Skirt2DVisualizationProps> = ({ panels, cut
       <p>Required Fabric Length: <strong>{totalFabricHeight.toFixed(2)} cm</strong></p>
       <p>Cut Allowance between panels: {cutAllowance.toFixed(2)} cm</p>
       <p>Layout Strategy: Panels are laid out side-by-side, alternating direction for efficient use of fabric.</p>
-      <p>Debug: totalFabricHeight={totalFabricHeight.toFixed(2)}, effectiveTotalFabricHeight={effectiveTotalFabricHeight.toFixed(2)}, scale={scale.toFixed(2)}, scaledFabricWidth={scaledFabricWidth.toFixed(2)}, scaledTotalFabricHeight={scaledTotalFabricHeight.toFixed(2)}</p>
 
       <svg
         width={visualizationWidth}
