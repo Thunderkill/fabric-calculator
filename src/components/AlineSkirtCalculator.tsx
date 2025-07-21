@@ -119,6 +119,18 @@ const Slider: React.FC<{
 };
 
 
+const colors = [
+  '#FF6347', // Tomato
+  '#4682B4', // SteelBlue
+  '#32CD32', // LimeGreen
+  '#FFD700', // Gold
+  '#8A2BE2', // BlueViolet
+  '#FF69B4', // HotPink
+  '#00CED1', // DarkTurquoise
+  '#FFA500', // Orange
+];
+
+
 const renderPanelVisualization = (calculatedPanels: PanelDimensions[]) => {
   if (!calculatedPanels || calculatedPanels.length === 0) return null;
 
@@ -128,7 +140,7 @@ const renderPanelVisualization = (calculatedPanels: PanelDimensions[]) => {
   return (
     <div className="panel-visualization-container">
       <div className="panels-grid">
-        {calculatedPanels.map(panel => (
+        {calculatedPanels.map((panel, index) => (
           <div key={panel.id} className="panel-card">
             <h4>Panel {panel.id}</h4>
             <svg
@@ -145,7 +157,7 @@ const renderPanelVisualization = (calculatedPanels: PanelDimensions[]) => {
                   ${(150 + (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
                   ${(150 - (panel.hemWidthWithSeam * scaleFactor)) / 2},${panel.heightWithSeam * scaleFactor}
                 `}
-                fill="#ADD8E6"
+                fill={colors[index % colors.length]}
                 stroke="#333"
                 strokeWidth="1"
               />
