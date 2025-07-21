@@ -119,8 +119,8 @@ const Skirt3DVisualization: React.FC<Skirt3DVisualizationProps> = ({
       <Canvas>
         <PerspectiveCamera makeDefault position={[0, skirtLength / 2, waistRadius * 3]} fov={50} />
         <OrbitControls enablePan={false} enableZoom={true} enableRotate={true} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
+        <ambientLight intensity={1.0} />
+        <directionalLight position={[5, 10, 7.5]} intensity={1.5} />
 
         {panels.map((panel, index) => {
           const panelWaistAngle = (panel.waistWidth / waistCircumference) * 2 * Math.PI;
