@@ -29,26 +29,48 @@ const Panel: React.FC<{
 }> = ({ color, startAngle, endAngle, waistRadius, hemRadius, height }) => {
   const ref = useRef<THREE.Mesh>(null);
 
-  // Create custom BufferGeometry for the trapezoidal panel
-  const vertices = new Float32Array([
-    // Top face (waist)
-    waistRadius * Math.cos(startAngle), height / 2, waistRadius * Math.sin(startAngle), // 0: Top-left
-    waistRadius * Math.cos(endAngle), height / 2, waistRadius * Math.sin(endAngle),     // 1: Top-right
-    // Bottom face (hem)
-    hemRadius * Math.cos(endAngle), -height / 2, hemRadius * Math.sin(endAngle),       // 2: Bottom-right
-    hemRadius * Math.cos(startAngle), -height / 2, hemRadius * Math.sin(startAngle),   // 3: Bottom-left
-  ]);
+  // Create custom BufferGeometry for the curved panel
+  const segments = 16; // Number of segments to approximate the curve
+  const panelVertices: number[] = [];
+  const panelIndices: number[] = [];
 
-  const indices = new Uint16Array([
-    // Front face (connecting top-left to bottom-left, and top-right to bottom-right)
-    0, 3, 2, // Triangle 1
-    0, 2, 1, // Triangle 2
+  // Calculate angular width of the panel
+  const angleRange = endAngle - startAngle;
 
-    // Back face (optional, if DoubleSide is not enough or for thickness)
-    // For a single-sided panel, we only need the front.
-    // If we want a thin 3D panel, we'd need more vertices and faces.
-    // For now, let's assume it's a single-sided "fabric" panel.
-  ]);
+  for (let i = 0; i <= segments; i++) {
+    const u = i / segments; // Normalized position along the segment (0 to 1)
+    const currentSegmentAngle = startAngle + u * angleRange;
+
+    // Vertices for the top edge (waist)
+    panelVertices.push(
+      waistRadius * Math.cos(currentSegmentAngle),
+      height / 2,
+      waistRadius * Math.sin(currentSegmentAngle)
+    );
+
+    // Vertices for the bottom edge (hem)
+    panelVertices.push(
+      hemRadius * Math.cos(currentSegmentAngle),
+      -height / 2,
+      hemRadius * Math.sin(currentSegmentAngle)
+    );
+  }
+
+  // Create faces (two triangles per segment)
+  for (let i = 0; i < segments; i++) {
+    const i0 = i * 2;     // Current top vertex
+    const i1 = i * 2 + 1; // Current bottom vertex
+    const i2 = (i + 1) * 2;     // Next top vertex
+    const i3 = (i + 1) * 2 + 1; // Next bottom vertex
+
+    // Triangle 1: current top, next top, current bottom
+    panelIndices.push(i0, i2, i1);
+    // Triangle 2: next top, next bottom, current bottom
+    panelIndices.push(i2, i3, i1);
+  }
+
+  const vertices = new Float32Array(panelVertices);
+  const indices = new Uint16Array(panelIndices);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
